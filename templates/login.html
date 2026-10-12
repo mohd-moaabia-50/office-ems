@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% from 'macros.html' import csrf, field with context %}
+{% block title %}Sign in{% endblock %}{% block content %}
+<section class="auth panel"><p class="eyebrow">EMPLOYEE WORKSPACE</p><h1>Sign in</h1><p class="muted">Manage employees, attendance and payroll in one place.</p>
+<form method="post">{{ csrf() }}{{ field('username','Username',value=request.form.get('username',''),required=true,maxlength=40,autocomplete='username') }}{{ field('password','Password','password',required=true,maxlength=128,autocomplete='current-password') }}<button type="submit">Sign in</button></form>
+<p class="muted">Use the account you created during setup. No default passwords are included.</p></section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from 'macros.html' import badge with context %}
+{% block title %}Employees{% endblock %}{% block content %}
+<div class="page-heading"><div><h1>Employees</h1><p class="muted">Find and manage your employee directory.</p></div><div class="actions"><a class="button secondary" href="{{ url_for('export_csv',report='employees') }}">Export CSV</a>{% if can_write %}<a class="button" href="{{ url_for('employee_form') }}">Add employee</a>{% endif %}</div></div>
+<form class="search" method="get"><label for="q">Search directory</label><input id="q" name="q" value="{{ keyword }}" placeholder="Name, code, department or designation" maxlength="100"><button type="submit">Search</button>{% if keyword %}<a href="{{ url_for('employees') }}">Clear</a>{% endif %}</form>
+<p class="muted">{{ employees|length }} employee record(s)</p>
+<div class="records"><table><thead><tr><th>Employee</th><th>Department</th><th>Contact</th><th>Joined / status</th>{% if can_write %}<th>Salary (INR)</th><th>Actions</th>{% endif %}</tr></thead><tbody>
+{% for row in employees %}<tr>
+<td data-label="Employee"><strong>{{ row.full_name }}</strong><small>{{ row.employee_code }}</small></td>
+<td data-label="Department">{{ row.dept_name }}<small>{{ row.title }}</small></td>
+<td data-label="Contact">{{ row.email or '-' }}<small>{{ row.phone or '-' }}</small><small>{{ row.address or '-' }}</small></td>
+<td data-label="Joined / status">{{ row.join_date }}<small>{{ badge(row.employment_status) }}</small></td>
+{% if can_write %}<td data-label="Salary (INR)">{{ row.salary|amount }}</td><td data-label="Actions"><div class="actions"><a href="{{ url_for('employee_form',emp_id=row.emp_id) }}">Edit</a><a class="danger-text" href="{{ url_for('delete_employee',emp_id=row.emp_id) }}">Delete</a></div></td>{% endif %}</tr>
+{% else %}<tr><td colspan="6">No employees found. Try another search.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

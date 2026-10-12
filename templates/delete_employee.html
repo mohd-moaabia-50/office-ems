@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
+{% block title %}Delete employee{% endblock %}{% block content %}
+<section class="auth panel"><h1>Delete this employee?</h1><p><strong>{{ employee.full_name }}</strong> ({{ employee.employee_code }})</p><p>This also deletes all linked attendance and payroll records. This cannot be undone.</p><form method="post">{{ csrf() }}<div class="actions"><button class="danger" type="submit">Delete employee and records</button><a href="{{ url_for('employees') }}">Cancel</a></div></form></section>
+{% endblock %}

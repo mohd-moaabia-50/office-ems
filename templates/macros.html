@@ -1,0 +1,18 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% endmacro %}
+{% macro field(name, label, type='text', value='', required=false, maxlength=200, step=none, min=none, autocomplete=none) %}
+<div class="field"><label for="{{ name }}">{{ label }}{% if required %} <span aria-label="required">*</span>{% endif %}</label>
+<input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value if value is not none else '' }}" {% if required %}required{% endif %} maxlength="{{ maxlength }}" {% if step %}step="{{ step }}"{% endif %} {% if min is not none %}min="{{ min }}"{% endif %} {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}></div>
+{% endmacro %}
+{% macro employee_select(lookup) %}
+<div class="field"><label for="emp_id">Employee *</label><select name="emp_id" id="emp_id" required><option value="">Choose employee</option>
+{% for employee in lookup %}<option value="{{ employee.emp_id }}" {% if request.form.get('emp_id') == employee.emp_id|string %}selected{% endif %}>{{ employee.employee_code }} - {{ employee.full_name }}</option>{% endfor %}</select></div>
+{% endmacro %}
+{% macro choice(name,label,choices) %}
+<div class="field"><label for="{{ name }}">{{ label }} *</label><select name="{{ name }}" id="{{ name }}" required>{% for option in choices %}<option {% if request.form.get(name) == option %}selected{% endif %}>{{ option }}</option>{% endfor %}</select></div>
+{% endmacro %}
+{% macro badge(status) %}<span class="badge {{ status|lower }}">{{ status }}</span>{% endmacro %}
+{% macro attendance_table(records) %}
+<div class="records"><table><thead><tr><th>Employee</th><th>Date</th><th>Status</th><th>Remarks</th></tr></thead><tbody>
+{% for row in records %}<tr><td data-label="Employee"><strong>{{ row.full_name }}</strong><small>{{ row.employee_code }}</small></td><td data-label="Date">{{ row.att_date }}</td><td data-label="Status">{{ badge(row.status) }}</td><td data-label="Remarks">{{ row.remarks or '-' }}</td></tr>{% else %}<tr><td colspan="4">No attendance records yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endmacro %}

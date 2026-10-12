@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}OfficeEMS{% endblock %} | OfficeEMS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="header">
+  <a class="brand" href="{{ url_for('dashboard') }}">Office<span>EMS</span></a>
+  {% if user %}
+  <nav aria-label="Main navigation">
+    {% for endpoint, label in [('dashboard','Overview'),('employees','Employees'),('attendance','Attendance')] %}
+    <a {% if request.endpoint == endpoint %}aria-current="page"{% endif %} href="{{ url_for(endpoint) }}">{{ label }}</a>
+    {% endfor %}
+    {% if can_write %}<a {% if request.endpoint == 'payroll' %}aria-current="page"{% endif %} href="{{ url_for('payroll') }}">Payroll</a>{% endif %}
+    <a href="{{ url_for('change_password') }}">Password</a>
+    <form action="{{ url_for('logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="quiet" type="submit">Log out</button></form>
+  </nav>
+  {% endif %}
+</header>
+<main>
+{% if demo_mode %}<aside class="notice">Portfolio demo. All starting employee data is synthetic. Do not enter real personal information. On Render Free, changes can disappear after sleep or restart.</aside>{% endif %}
+{% if user %}<p class="identity">{{ user.display_name }} &middot; {{ user.role }}</p>{% endif %}
+{% for category, message in get_flashed_messages(with_categories=true) %}<div role="status" class="flash {{ category }}">{{ message }}</div>{% endfor %}
+{% block content %}{% endblock %}
+</main>
+<footer>Developed by Mohd Moaabia &middot; Flask + SQLite</footer>
+</body></html>

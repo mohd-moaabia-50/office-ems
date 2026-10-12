@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% from 'macros.html' import csrf, field with context %}
+{% block title %}{{ 'Edit' if emp_id else 'Add' }} employee{% endblock %}{% block content %}
+<h1>{{ 'Edit' if emp_id else 'Add' }} employee</h1><p class="muted">Fields marked * are required. Demo data only.</p>
+<form method="post" class="panel">{{ csrf() }}<div class="form-grid">
+{{ field('employee_code','Employee code',value=employee.get('employee_code',''),required=true,maxlength=30) }}
+{{ field('full_name','Full name',value=employee.get('full_name',''),required=true,maxlength=100) }}
+{% for name,label,rows,id_key,text_key in [('dept_id','Department',departments,'dept_id','dept_name'),('designation_id','Designation',designations,'designation_id','title')] %}
+<div class="field"><label for="{{ name }}">{{ label }} *</label><select name="{{ name }}" id="{{ name }}" required>{% for row in rows %}<option value="{{ row[id_key] }}" {% if employee.get(name)|string == row[id_key]|string %}selected{% endif %}>{{ row[text_key] }}</option>{% endfor %}</select></div>
+{% endfor %}
+{{ field('phone','Phone',value=employee.get('phone',''),maxlength=30) }}
+{{ field('email','Email','email',value=employee.get('email',''),maxlength=254) }}
+{{ field('join_date','Join date','date',value=employee.get('join_date',''),required=true) }}
+{{ field('salary','Monthly salary (INR)','number',value=employee.get('salary',''),required=true,step='0.01',min=0) }}
+<div class="field"><label for="employment_status">Employment status *</label><select id="employment_status" name="employment_status">{% for status in ['Active','Inactive'] %}<option {% if employee.get('employment_status') == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select></div>
+<div class="field"><label for="address">Address</label><textarea name="address" id="address" maxlength="500" rows="3">{{ employee.get('address','') or '' }}</textarea></div>
+</div><div class="actions"><button type="submit">Save employee</button><a href="{{ url_for('employees') }}">Cancel</a></div></form>
+{% endblock %}

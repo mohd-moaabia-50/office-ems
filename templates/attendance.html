@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% from 'macros.html' import csrf,field,choice,employee_select,attendance_table with context %}
+{% block title %}Attendance{% endblock %}{% block content %}
+<div class="page-heading"><div><h1>Attendance</h1><p class="muted">One attendance record per employee per day.</p></div><a class="button secondary" href="{{ url_for('export_csv',report='attendance') }}">Export CSV</a></div>
+{% if can_write %}<form method="post" class="panel">{{ csrf() }}<h2>Mark attendance</h2><div class="form-grid">{{ employee_select(lookup) }}{{ field('att_date','Date','date',value=request.form.get('att_date',today|string),required=true) }}{{ choice('status','Status',statuses) }}{{ field('remarks','Remarks',value=request.form.get('remarks',''),maxlength=300) }}</div><button type="submit" {% if not lookup %}disabled{% endif %}>Save attendance</button></form>{% endif %}
+{{ attendance_table(records) }}
+{% endblock %}
