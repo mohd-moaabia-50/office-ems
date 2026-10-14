@@ -5,7 +5,7 @@
                 display_name TEXT NOT NULL,
                 password_hash TEXT NOT NULL,
                 session_version INTEGER NOT NULL DEFAULT 1,
-                role TEXT NOT NULL CHECK(role IN ('Admin','HR','Manager'))
+                role TEXT NOT NULL CHECK(role IN ('Admin','HR','Manager','Demo'))
             );
 
             CREATE TABLE IF NOT EXISTS departments (

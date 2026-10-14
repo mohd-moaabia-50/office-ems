@@ -17,6 +17,9 @@ from flask import (Flask, Response, abort, flash, g, redirect, render_template,
 from werkzeug.security import check_password_hash, generate_password_hash
 
 ROLES = ('Admin', 'HR', 'Manager')
+# Public read-only demo login, shown on the sign-in page when DEMO_MODE is on.
+DEMO_USERNAME = 'demo'
+DEMO_PASSWORD = 'demo12345678'
 ATTENDANCE_STATUSES = ('Present', 'Absent', 'Leave', 'WFH')
 EMPLOYEE_STATUSES = ('Active', 'Inactive')
 PAYMENT_STATUSES = ('Pending', 'Paid')
@@ -234,7 +237,8 @@ def create_app(test_config=None):
     def shared_context():
         return dict(user=g.user, csrf_token=session.get('csrf_token'), today=date.today(),
                     demo_mode=app.config['DEMO_MODE'],
-                    can_write=g.user is not None and g.user['role'] in ('Admin', 'HR'))
+                    can_write=g.user is not None and g.user['role'] in ('Admin', 'HR'),
+                    can_view_payroll=g.user is not None and g.user['role'] in ('Admin', 'HR', 'Demo'))
 
     @app.template_filter('amount')
     def amount(value):
@@ -290,6 +294,8 @@ def create_app(test_config=None):
     @app.route('/password', methods=['GET', 'POST'])
     @login_required
     def change_password():
+        if g.user['role'] == 'Demo':
+            abort(403, description='The shared demo account password cannot be changed.')
         if request.method == 'POST':
             current = request.form.get('current_password', '')
             new = request.form.get('new_password', '')
@@ -414,10 +420,12 @@ def create_app(test_config=None):
         return render_template('attendance.html', records=rows, lookup=lookup, statuses=ATTENDANCE_STATUSES)
 
     @app.route('/payroll', methods=['GET', 'POST'])
-    @roles_required('Admin', 'HR')
+    @roles_required('Admin', 'HR', 'Demo')
     def payroll():
         db = get_db()
         if request.method == 'POST':
+            if g.user['role'] not in ('Admin', 'HR'):
+                abort(403)
             try:
                 emp_id = employee_id()
                 month = form_text('pay_month', 7, True)
@@ -448,7 +456,7 @@ def create_app(test_config=None):
     def export_csv(report):
         if report not in ('employees', 'attendance', 'payroll'):
             abort(404)
-        if report == 'payroll' and g.user['role'] not in ('Admin', 'HR'):
+        if report == 'payroll' and g.user['role'] not in ('Admin', 'HR', 'Demo'):
             abort(403)
         headers = {
             'employees': ['employee_code','full_name','dept_name','title','phone','email','join_date','employment_status','address'],
@@ -495,6 +503,16 @@ def create_app(test_config=None):
                 if not existing:
                     create_user(username, password, role)
         if app.config['DEMO_MODE']:
+            if not db.execute('SELECT 1 FROM users WHERE username=?', (DEMO_USERNAME,)).fetchone():
+                try:
+                    with db:
+                        db.execute('INSERT INTO users(username,display_name,password_hash,role) VALUES (?,?,?,?)',
+                                   (DEMO_USERNAME, 'Demo Visitor', generate_password_hash(DEMO_PASSWORD), 'Demo'))
+                except sqlite3.IntegrityError:
+                    # Databases created before the Demo role existed reject it; keep the demo login working there.
+                    with db:
+                        db.execute('INSERT INTO users(username,display_name,password_hash,role) VALUES (?,?,?,?)',
+                                   (DEMO_USERNAME, 'Demo Visitor', generate_password_hash(DEMO_PASSWORD), 'Manager'))
             seed_demo()
     return app
 
@@ -502,3 +520,4 @@ def create_app(test_config=None):
 if __name__ == '__main__':
     # Flask's local development server, never use this server for production.
     create_app().run(host='127.0.0.1', port=5000, debug=False)
+
