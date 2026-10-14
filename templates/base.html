@@ -13,8 +13,8 @@
     {% for endpoint, label in [('dashboard','Overview'),('employees','Employees'),('attendance','Attendance')] %}
     <a {% if request.endpoint == endpoint %}aria-current="page"{% endif %} href="{{ url_for(endpoint) }}">{{ label }}</a>
     {% endfor %}
-    {% if can_write %}<a {% if request.endpoint == 'payroll' %}aria-current="page"{% endif %} href="{{ url_for('payroll') }}">Payroll</a>{% endif %}
-    <a href="{{ url_for('change_password') }}">Password</a>
+    {% if can_view_payroll %}<a {% if request.endpoint == 'payroll' %}aria-current="page"{% endif %} href="{{ url_for('payroll') }}">Payroll</a>{% endif %}
+    {% if user.role != 'Demo' %}<a href="{{ url_for('change_password') }}">Password</a>{% endif %}
     <form action="{{ url_for('logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="quiet" type="submit">Log out</button></form>
   </nav>
   {% endif %}

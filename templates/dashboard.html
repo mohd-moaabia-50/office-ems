@@ -5,5 +5,5 @@
 {% for key,label in [('total','Total employees'),('active','Active employees'),('present','Present today'),('pending','Pending payroll records')] %}{% if key in counts %}<article class="stat"><p>{{ label }}</p><strong>{{ counts[key] }}</strong></article>{% endif %}{% endfor %}
 </div>
 <div class="panel"><div class="section-heading"><h2>Recent attendance</h2><a href="{{ url_for('attendance') }}">View all</a></div>{{ attendance_table(recent) }}</div>
-<div class="notice">{% if can_write %}Start with an employee record, then mark attendance or generate payroll. Payroll is a record only: no money is transferred.{% else %}Manager access is read-only. You can view employees and attendance and export those records. Salary and payroll are restricted to Admin and HR.{% endif %}</div>
+<div class="notice">{% if can_write %}Start with an employee record, then mark attendance or generate payroll. Payroll is a record only: no money is transferred.{% elif user.role == 'Demo' %}Demo access is read-only. You can view employees, attendance and payroll and export records, but you cannot add, edit or delete anything.{% else %}Manager access is read-only. You can view employees and attendance and export those records. Salary and payroll are restricted to Admin and HR.{% endif %}</div>
 {% endblock %}
